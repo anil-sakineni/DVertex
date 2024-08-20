@@ -5,7 +5,7 @@ const {
     createUsers,
     deleteById,
     updateUser,
-    loginUser,
+    loginUser, 
     Upload
 } = require('../controllers/registerController')
 
@@ -15,7 +15,7 @@ const router = express.Router()
 
 
 router.get('/', getUsers)
-router.post('/add', Upload, createUsers)
+router.post('/add',  Upload)
 router.delete('/:id', deleteById)
 router.put('/:id', updateUser)
 router.post('/login', loginUser)

@@ -35,10 +35,10 @@ const getUsers = async (req, res, next) => {
 
 // post request
 const Upload = async (req, res, next) => {
+   
+   
 
-
-
-    upload(req, res, (err) => {
+    upload(req, res, async (err) => {
         if (err) {
             console.log("error");
 
@@ -57,10 +57,19 @@ const Upload = async (req, res, next) => {
                 password: req.body.password
 
             })
+            // const {email}=req.body
+            // console.log("email",email);
+            
+            let existingUser=await User.find(user.email);
+            if(existingUser.length>0){
+             return res.status(400).json({message:"this user already exists"})
+            }
+
+
 
             if (user.name == "" || user.email == "" || user.age === null || user.phone === null || user.image == "" || user.password == "") {
                 console.log("failed");
-                res.status(400).json({
+                return res.status(400).json({
                     status: "failed",
                     message: "all fields are mandetory"
 
@@ -69,7 +78,7 @@ const Upload = async (req, res, next) => {
             }
 
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
-                res.status(400).json({
+                return res.status(400).json({
                     status: "failed",
                     message: "invalid email entered"
                 })
@@ -77,7 +86,7 @@ const Upload = async (req, res, next) => {
             if (!/^[0-9]{10}$/.test(user.phone)) {
                 console.log("details");
 
-                res.status(400).json(
+                return res.status(400).json(
                     {
                         status: "failed",
                         message: "phone number must and should be 10"
@@ -87,7 +96,7 @@ const Upload = async (req, res, next) => {
             }
 
             if (!user.image) {
-                res.status(400).json(
+                return res.status(400).json(
                     {
                         status: "failed",
                         message: "immage should be mandetory"
@@ -96,7 +105,7 @@ const Upload = async (req, res, next) => {
             }
             if (!/^.{8}$/.test(user.password)) {
 
-                res.status(400).json(
+                return res.status(400).json(
                     {
                         status: "failed",
                         message: "password should be must and should 8  letters"
@@ -104,19 +113,46 @@ const Upload = async (req, res, next) => {
                 )
 
             }
+           
+           
             user.save()
             return res.status(200).json(user)
 
         }
     })
-    next()
+
+ 
 }
+
+
 
 // postrequest
 const createUsers = async (req, res, next) => {
+    const  {email } = req.body
+    console.log("req body",req.body);
     
-        console.log("user registered successfully");
+    console.log("email",email);
     
+
+    let existingUser;
+    try {
+        existingUser = await User.findOne({email:email.toString()} )
+        console.log("email",email)
+       console.log("existing user",existingUser)
+        if(existingUser.length > 0 ){
+            return res.status(400).json({message:"user already exist"})
+        }
+        else{
+            next()
+        }
+    
+    }
+    catch (err) {
+        console.log("error",err); 
+    }
+    
+
+
 }
 
 const deleteById = async (req, res, next) => {
@@ -135,11 +171,11 @@ const deleteById = async (req, res, next) => {
 
 
 const updateUser = async (req, res, next) => {
-    const { name, email } = req.body
+    const { name, email, age, phone, password, image } = req.body
     const userId = req.params.id;
     let user;
     try {
-        user = await User.findByIdAndUpdate(userId, { name, email })
+        user = await User.findByIdAndUpdate(userId, { name, email, age, phone, password, image })
     } catch (err) {
         console.log(err);
 
@@ -160,7 +196,7 @@ const loginUser = async (req, res, next) => {
         console.log("err");
 
     }
-    
+
     if (!email || !password) {
         console.log("err");
         res.status(400).json({ message: 'login un successfull' })
@@ -172,7 +208,7 @@ const loginUser = async (req, res, next) => {
     }
     else {
         console.log("login successsfull");
-        
+
         return res.status(200).json({ user })
     }
 
