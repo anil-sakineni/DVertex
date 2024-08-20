@@ -12,10 +12,7 @@ const Stroage = multer.diskStorage({
 
 const upload = multer({
     storage: Stroage
-}).single('textImage')
-
-
-
+})
 
 
 const getUsers = async (req, res, next) => {
@@ -34,16 +31,22 @@ const getUsers = async (req, res, next) => {
 }
 
 // post request
-const Upload = async (req, res, next) => {
-   
-   
+const createUsers = async (req, res, next) => {
 
-    upload(req, res, async (err) => {
+
+
+    upload.single('textImage')(req, res, async (err) => {
         if (err) {
-            console.log("error");
+            console.log("file upload error");
 
         }
         else {
+            const { email } = req.body
+            let existingUser = await User.findOne({ email });
+            if (existingUser) {
+                return res.status(400).json({ message: "this user already exists" })
+            }
+
             const user = new User({
                 name: req.body.name,
                 email: req.body.email,
@@ -51,22 +54,12 @@ const Upload = async (req, res, next) => {
                 phone: req.body.phone,
 
                 image: {
-                    data: req.file.filename,
-                    contentType: 'image/png'
+                    data: req.file.filename
                 },
                 password: req.body.password
 
             })
-            // const {email}=req.body
-            // console.log("email",email);
             
-            let existingUser=await User.find(user.email);
-            if(existingUser.length>0){
-             return res.status(400).json({message:"this user already exists"})
-            }
-
-
-
             if (user.name == "" || user.email == "" || user.age === null || user.phone === null || user.image == "" || user.password == "") {
                 console.log("failed");
                 return res.status(400).json({
@@ -95,11 +88,11 @@ const Upload = async (req, res, next) => {
 
             }
 
-            if (!user.image) {
+            if (!/\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(user.image.data)) {
                 return res.status(400).json(
                     {
                         status: "failed",
-                        message: "immage should be mandetory"
+                        message: "immage should be perticular format"
                     }
                 )
             }
@@ -113,47 +106,20 @@ const Upload = async (req, res, next) => {
                 )
 
             }
-           
-           
+
+
             user.save()
             return res.status(200).json(user)
 
         }
     })
 
- 
-}
-
-
-
-// postrequest
-const createUsers = async (req, res, next) => {
-    const  {email } = req.body
-    console.log("req body",req.body);
-    
-    console.log("email",email);
-    
-
-    let existingUser;
-    try {
-        existingUser = await User.findOne({email:email.toString()} )
-        console.log("email",email)
-       console.log("existing user",existingUser)
-        if(existingUser.length > 0 ){
-            return res.status(400).json({message:"user already exist"})
-        }
-        else{
-            next()
-        }
-    
-    }
-    catch (err) {
-        console.log("error",err); 
-    }
-    
-
 
 }
+
+
+
+
 
 const deleteById = async (req, res, next) => {
     const userId = req.params.id;
@@ -207,17 +173,17 @@ const loginUser = async (req, res, next) => {
         res.status(400).json({ message: 'login un successfull' })
     }
     else {
-        console.log("login successsfull");
+        console.log("login successsfull"); 
 
         return res.status(200).json({ user })
     }
 
 }
+
 module.exports = {
     getUsers,
     createUsers,
     deleteById,
     updateUser,
-    loginUser,
-    Upload
+    loginUser
 }  
