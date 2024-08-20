@@ -9,10 +9,13 @@ const connectDB = async () => {
     const db = mongoose.connection;
 
     db.once('error', () => {
-        console.log('mongo  db connection error');
+        console.log('mongo db connection error');
+
     })
+
     db.on('open', () => {
-        console.log('mongodb connection successful');
+        console.log('connected to data base');
+
     })
 }
 

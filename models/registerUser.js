@@ -3,30 +3,39 @@ const mongoose = require('mongoose')
 const registerUser = mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: [true]
+
     },
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true 
+
     },
+
     age: {
         type: Number,
-        required: true,
+        required: [true]
     },
     phone: {
         type: Number,
-        required: true,
-        minlength: [10, "please enter only 10 digits"]
+        required: [true],
+
+    },
+    image: {
+        data: [],
+        contentType:String,
+        
     },
     password: {
-        type: String,
-        required: true
-    },
-    confirmPassword: {
         type: String,
         required: true
     }
 })
 
 module.exports = mongoose.model("register", registerUser)
+
+// add image
+// validations for the inputs
+// users should be update its information
+
